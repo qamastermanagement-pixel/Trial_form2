@@ -209,6 +209,11 @@
           remark: remark
         });
       });
+
+      //Disable tombol submit
+      const submitBtn = document.getElementById("submit"); 
+      submitBtn.disabled = true; 
+      submitBtn.innerText = "Mengirim...";
       
     // Kirim ke Apps Script Web App
     fetch("https://script.google.com/macros/s/AKfycbxOi4rXj05B8Jwjyvzmy1Zh2JphiPa38upus1yzMU3x0AEgmk4tzgGPex9ietT6-YoR/exec", {
@@ -218,9 +223,15 @@
     .then(res => res.text())
     .then(text => {
       alert("Data berhasil dikirim ke Google Sheets: " + text);
-    })
+  document.getElementById("masterForm").reset();         // reset semua input
+  document.getElementById("formBody").innerHTML = "";    // kosongkan tabel master
+})
     .catch(err => {
       alert("Error saat kirim data: " + err);
+    }) 
+    .finally(() => {
+      submitBtn.disabled = false; 
+      submitBtn.innerText = "Submit";
     });
   });
   </script>
