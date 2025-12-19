@@ -16,6 +16,20 @@
 </head>
 <body>
   <h2>Shift Monitoring Working Master</h2>
+  <div id="notification" style="
+      display:none;
+      position:fixed;
+      top:50px;
+      left:20px;
+      transform:translateY(-50%, 50%);
+      background:#4CAF50;
+      color:white;
+      padding:20px 40px;
+      border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.3);
+      z-index:1000;
+      text-align:center;
+    "></div>
 
   <div class="form-header">
     <label>Tanggal: <input type="date" id="date"></label>
@@ -188,6 +202,18 @@
       if (!show) remarkInput.value = "";
     }
 
+    function showNotification(message, success) {
+    const notif = document.getElementById("notification");
+    notif.innerText = message;
+    notif.style.background = success ? "#4CAF50" : "#f44336"; // hijau sukses, merah error
+    notif.style.display = "block";
+
+    // Hilang otomatis setelah 3 detik
+        setTimeout(() => {
+        notif.style.display = "none";
+        }, 3000);
+    }
+
     document.getElementById("masterForm").addEventListener("submit", function(e) {
       e.preventDefault();
 
@@ -209,29 +235,24 @@
           remark: remark
         });
       });
-
-      //Disable tombol submit
-      const submitBtn = document.getElementById("submit"); 
-      submitBtn.disabled = true; 
-      submitBtn.innerText = "Mengirim...";
       
     // Kirim ke Apps Script Web App
     fetch("https://script.google.com/macros/s/AKfycbxOi4rXj05B8Jwjyvzmy1Zh2JphiPa38upus1yzMU3x0AEgmk4tzgGPex9ietT6-YoR/exec", {
-      method: "POST",
-      body: JSON.stringify({ date, shift, npk, channel, results })
+    method: "POST",
+    body: JSON.stringify({ date, shift, npk, channel, results })
     })
     .then(res => res.text())
     .then(text => {
-      alert("Submit Form : " + text);
-  document.getElementById("masterForm").reset();         // reset semua input
-  document.getElementById("formBody").innerHTML = "";    // kosongkan tabel master
-})
+    showNotification("Data berhasil dikirim : " + text, true);
+    document.getElementById("masterForm").reset();         // reset semua input dalam form
+    document.getElementById("formBody").innerHTML = "";    // kosongkan tabel master
+    document.getElementById("date").value = "";            // reset tanggal
+    document.getElementById("shift").value = "";           // reset shift
+    document.getElementById("npk").value = "";             // reset npk
+    document.getElementById("channel").value = "";         // reset channel
+    })
     .catch(err => {
-      alert("Error saat kirim data: " + err);
-    }) 
-    .finally(() => {
-      submitBtn.disabled = false; 
-      submitBtn.innerText = "Submit";
+      showNotification("Error saat kirim data: " + err, false);
     });
   });
   </script>
