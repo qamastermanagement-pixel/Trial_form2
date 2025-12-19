@@ -43,7 +43,7 @@
       <thead>
         <tr>
           <th>Nama Master</th>
-          <th>Kode Kalibrasi</th>
+          <th>Calibraton code</th>
           <th>Status</th>
           <th>Remark (jika NG)</th>
         </tr>
@@ -194,7 +194,7 @@
       const date = document.getElementById("date").value;
       const shift = document.getElementById("shift").value;
       const npk = document.getElementById("npk").value;
-      const channel = document.getElementById("channel").value;
+      const channel = document.getElementById("channel").value;        
 
       // Kumpulkan hasil form
       const results = [];
@@ -209,15 +209,20 @@
           remark: remark
         });
       });
-
-      console.log({
-        date, shift, npk, channel, results
-      });
-
-      alert("Form disubmit! Data sudah terkumpul di console log. (Integrasi ke Google Sheets tahap berikutnya)");
+      
+    // Kirim ke Apps Script Web App
+    fetch("https://script.google.com/macros/s/AKfycbxOi4rXj05B8Jwjyvzmy1Zh2JphiPa38upus1yzMU3x0AEgmk4tzgGPex9ietT6-YoR/exec", {
+      method: "POST",
+      body: JSON.stringify({ date, shift, npk, channel, results })
+    })
+    .then(res => res.text())
+    .then(text => {
+      alert("Data berhasil dikirim ke Google Sheets: " + text);
+    })
+    .catch(err => {
+      alert("Error saat kirim data: " + err);
     });
+  });
   </script>
 </body>
 </html>
-
-
