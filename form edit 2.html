@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Shift Monitoring Working Master</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h2 { text-align: center; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .remark { display: none; }
+    .form-header { margin-bottom: 20px; }
+    label { margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Shift Monitoring Working Master</h2>
+
+  <div class="form-header">
+    <label>Tanggal: <input type="date" id="date"></label>
+    <label>Shift: 
+      <select id="shift">
+        <option value="">--Pilih--</option>
+        <option value="Shift 1">Shift 1</option>
+        <option value="Shift 2">Shift 2</option>
+        <option value="Shift 3">Shift 3</option>
+      </select>
+    </label>
+    <label>NPK: <input type="text" id="npk" placeholder="Masukkan NPK"></label>
+    <label>Channel: 
+      <select id="channel" onchange="loadMasters()">
+        <option value="">--Pilih Channel--</option>
+        <option value="12">Channel 12</option>
+        <option value="13">Channel 13</option>
+        <!-- Tambah sampai 16 -->
+      </select>
+    </label>
+  </div>
+
+  <form id="masterForm">
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Master</th>
+          <th>Kode Kalibrasi</th>
+          <th>Status</th>
+          <th>Remark (jika NG)</th>
+        </tr>
+      </thead>
+      <tbody id="formBody"></tbody>
+    </table>
+    <br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    // Data master per channel
+    const masterData = {
+      "12": [
+        ["OR Raceway Grinding", "A12de1"],
+        ["OR Raceway Grinding", "A12de2"],
+        ["IR Raceway Grinding", "A12Di1"],
+        ["IR Raceway Grinding", "A12Di2"],
+        ["IR Raceway Grinding", "A12Dk1"],
+        ["IR Bore Grinding", "A12do1"],
+        ["IR Bore Grinding", "A12do2"],
+        ["OD Inspection", "A12AO1"],
+        ["OD Inspection", "A12AO2"],
+        ["OD Inspection", "A12AO3"],
+        ["OD Inspection", "A12AO4"],
+        ["OD Inspection", "A12dm1"],
+        ["ID (Bore) Inspection", "A12AI1"],
+        ["ID (Bore) Inspection", "A12AI2"],
+        ["ID (Bore) Inspection", "A12AI3"],
+        ["ID (Bore) Inspection", "A12AI4"],
+        ["Bore Profile", "A12Mn1"],
+        ["Pairing & Ball Filling", "A12PR1"],
+        ["Pairing & Ball Filling", "A12PR2"],
+        ["Pairing & Ball Filling", "A12PR3"],
+        ["Pairing & Ball Filling", "A12PR4"],
+        ["Rivet Check", "A12RV1"],
+        ["Rivet Check", "A12RV2"],
+        ["Rivet Check", "A12RV3"],
+        ["Free run/Rotate Check", "A12AS1"],
+        ["Free run/Rotate Check", "A12AS2"],
+        ["Noise and Vibration lvl Check", "A12MV1"],
+        ["Noise and Vibration lvl Check", "A12MV2"],
+        ["Noise and Vibration lvl Check", "A12MV3"],
+        ["Auto Clearance Check", "A12C21"],
+        ["Auto Clearance Check", "A12Cn1"],
+        ["Auto Clearance Check", "A12C31"],
+        ["Auto Clearance Check", "A12C41"],
+        ["Auto Clearance Check", "A12C51"],
+        ["Seal Height Check", "A12AG1"],
+        ["Seal Height Check", "A12AG2"],
+        ["Seal Height Check", "A12AG3"],
+        ["Missing: Rivet, Ball, Cage Check", "A12PO1"],
+        ["Missing: Rivet, Ball, Cage Check", "A12PO2"],
+        ["Missing: Rivet, Ball, Cage Check", "A12PO3"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A12SH1"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A12SH2"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A12SH3"],
+        ["Bore Profile", "A12Mn2"],
+        ["Bore Profile", "A12Mn3"],
+        ["Bore Profile", "A12Mn4"]
+      ],
+      "13": [
+        ["OR Raceway Grinding", "A13de1"],
+        ["OR Raceway Grinding", "A13de2"],
+        ["IR Raceway Grinding", "A13Di1"],
+        ["IR Raceway Grinding", "A13Di2"],
+        ["IR Raceway Grinding", "A13Dk1"],
+        ["IR Bore Grinding", "A13do1"],
+        ["IR Bore Grinding", "A13do2"],
+        ["Bore Profile", "A13Mn1"],
+        ["OD Inspection", "A13Dm1"],
+        ["OD Inspection", "A13AO1"],
+        ["OD Inspection", "A13AO2"],
+        ["OD Inspection", "A13AO3"],
+        ["OD Inspection", "A13AO4"],
+        ["ID (Bore) Inspection", "A13AI1"],
+        ["ID (Bore) Inspection", "A13AI2"],
+        ["ID (Bore) Inspection", "A13AI3"],
+        ["ID (Bore) Inspection", "A13AI4"],
+        ["Pairing & Ball Filling", "A13PR1"],
+        ["Pairing & Ball Filling", "A13PR2"],
+        ["Pairing & Ball Filling", "A13PR3"],
+        ["Pairing & Ball Filling", "A13PR4"],
+        ["Rivet Check", "A13RV1"],
+        ["Rivet Check", "A13RV2"],
+        ["Rivet Check", "A13RV3"],
+        ["Noise and Vibration lvl Check", "A13MV1"],
+        ["Noise and Vibration lvl Check", "A13MV2"],
+        ["Noise and Vibration lvl Check", "A13MV3"],
+        ["Auto Clearance Check", "A13C21"],
+        ["Auto Clearance Check", "A13Cn1"],
+        ["Auto Clearance Check", "A13C31"],
+        ["Auto Clearance Check", "A13C41"],
+        ["Auto Clearance Check", "A13C51"],
+        ["Seal Height Check", "A13AG1"],
+        ["Seal Height Check", "A13AG2"],
+        ["Seal Height Check", "A13AG3"],
+        ["Missing: Rivet, Ball, Cage Check", "A13PO1"],
+        ["Missing: Rivet, Ball, Cage Check", "A13PO2"],
+        ["Missing: Rivet, Ball, Cage Check", "A13PO3"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A13SH1"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A13SH2"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A13SH3"],
+        ["Free run/Rotate Check", "A13AS1"],
+        ["Free run/Rotate Check", "A13AS2"],
+        ["Auto Clearance Check", "A13Cn2"],
+        ["Auto Clearance Check", "A13Cn3"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A13SH4"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A13SH5"],
+        ["Seal: Open, RS1/Z, 2RS1/2Z Check", "A13SH6"],
+        ["Bore Profile", "A13Mn2"],
+        ["Bore Profile", "A13Mn3"],
+        ["Bore Profile", "A13Mn4"]
+      ]
+    };
+
+    function loadMasters() {
+      const channel = document.getElementById("channel").value;
+      const formBody = document.getElementById("formBody");
+      formBody.innerHTML = "";
+    
+    if (channel && masterData[channel]) {
+        masterData[channel].forEach(([name, code], index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${name}</td>
+            <td>${code}</td>
+            <td>
+              <label><input type="radio" name="status${index}" value="OK" onclick="toggleRemark(${index}, false)" required> OK</label>
+              <label><input type="radio" name="status${index}" value="NG" onclick="toggleRemark(${index}, true)"> NG</label>
+            </td>
+            <td><input type="text" name="remark${index}" class="remark" placeholder="Isi remark jika NG"></td>
+          `;
+          formBody.appendChild(row);
+        });
+      }
+    }
+
+    function toggleRemark(index, show) {
+      const remarkInput = document.getElementsByName(`remark${index}`)[0];
+      remarkInput.style.display = show ? "inline" : "none";
+      if (!show) remarkInput.value = "";
+    }
+
+    document.getElementById("masterForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const date = document.getElementById("date").value;
+      const shift = document.getElementById("shift").value;
+      const npk = document.getElementById("npk").value;
+      const channel = document.getElementById("channel").value;
+
+      // Kumpulkan hasil form
+      const results = [];
+      const masters = masterData[channel] || [];
+      masters.forEach(([name, code], index) => {
+        const status = document.querySelector(`input[name="status${index}"]:checked`);
+        const remark = document.getElementsByName(`remark${index}`)[0].value;
+        results.push({
+          master: name,
+          code: code,
+          status: status ? status.value : "",
+          remark: remark
+        });
+      });
+
+      console.log({
+        date, shift, npk, channel, results
+      });
+
+      alert("Form disubmit! Data sudah terkumpul di console log. (Integrasi ke Google Sheets tahap berikutnya)");
+    });
+  </script>
+</body>
+</html>
+
